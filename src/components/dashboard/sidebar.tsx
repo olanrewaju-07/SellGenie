@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { 
   LayoutDashboard, 
   MessageSquare, 
@@ -29,7 +30,7 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
+  const { user, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -45,9 +46,13 @@ export function Sidebar() {
   }, []);
 
   const handleLogout = () => {
-    // In a real app, you would clear cookies/auth state here
-    router.push("/login");
+    logout();
   };
+
+  // Derive initials for the avatar
+  const initials = user?.fullName
+    ? user.fullName.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "?";
 
   return (
     <div className="flex h-screen w-64 flex-col bg-[#0F172A] text-white relative">
@@ -114,11 +119,11 @@ export function Sidebar() {
         >
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-white font-bold shrink-0">
-              AJ
+              {initials}
             </div>
             <div className="text-left overflow-hidden">
-              <p className="text-sm font-semibold text-white truncate">Amaka's Store</p>
-              <p className="text-xs text-slate-400 truncate">Growth Plan</p>
+              <p className="text-sm font-semibold text-white truncate">{user?.name ?? "My Store"}</p>
+              <p className="text-xs text-slate-400 truncate capitalize">{user?.subscriptionPlan ?? "Free Plan"}</p>
             </div>
           </div>
           <ChevronUp className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />

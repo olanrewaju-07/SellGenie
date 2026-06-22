@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, CreditCard, ShieldCheck, Zap } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const plans = [
   {
@@ -54,8 +55,12 @@ const plans = [
 ];
 
 export default function SubscriptionPage() {
-  const [currentPlan] = useState("Starter");
+  const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
+
+  const currentPlan = user?.subscriptionPlan
+    ? user.subscriptionPlan.charAt(0).toUpperCase() + user.subscriptionPlan.slice(1).toLowerCase()
+    : "Starter";
 
   const handleSubscribe = (planName: string) => {
     setIsProcessing(planName);
@@ -87,9 +92,9 @@ export default function SubscriptionPage() {
             <div>
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Current Plan</p>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                Starter Plan
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50">
-                  Active
+                {currentPlan} Plan
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50 capitalize">
+                  {user?.status ? user.status.toLowerCase() : "active"}
                 </span>
               </h2>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">

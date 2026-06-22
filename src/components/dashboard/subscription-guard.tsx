@@ -3,37 +3,26 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { AlertTriangle, CreditCard, Lock } from "lucide-react";
-import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user } = useAuth();
 
-  // MOCK STATE: In a real app, this comes from your auth/user context
-  // Toggle this to false to see the guard in action!
-  const [isSubscriptionActive, setIsSubscriptionActive] = useState(true);
+  // Derive subscription status from auth context
+  const isSubscriptionActive =
+    user?.subscriptionPlan === "STARTER" ||
+    user?.subscriptionPlan === "GROWTH" ||
+    user?.subscriptionPlan === "PRO" ||
+    user?.status === "ACTIVE";
 
   // Always allow access to the subscription page so they can renew
   if (pathname === "/dashboard/subscription") {
-    return (
-      <>
-        {/* Development Toggle - Remove in production */}
-        <div className="fixed bottom-4 right-4 z-50 bg-slate-900 text-white p-3 rounded-lg shadow-xl text-xs flex items-center gap-2 border border-slate-700">
-          <span>Mock Status:</span>
-          <button
-            onClick={() => setIsSubscriptionActive(!isSubscriptionActive)}
-            className={`px-2 py-1 rounded font-bold ${isSubscriptionActive ? 'bg-emerald-500' : 'bg-red-500'}`}
-          >
-            {isSubscriptionActive ? 'Active' : 'Expired'}
-          </button>
-        </div>
-
-        {children}
-      </>
-    );
+    return <>{children}</>;
   }
 
   // If subscription is expired and they are NOT on the subscription page
-  if (!isSubscriptionActive) {
+  if (user && !isSubscriptionActive) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-center h-full">
         <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden">
@@ -64,36 +53,10 @@ export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
             <span>Your store data is safely backed up.</span>
           </div>
         </div>
-
-        {/* Development Toggle - Remove in production */}
-        <div className="fixed bottom-4 right-4 z-50 bg-slate-900 text-white p-3 rounded-lg shadow-xl text-xs flex items-center gap-2 border border-slate-700">
-          <span>Mock Status:</span>
-          <button
-            onClick={() => setIsSubscriptionActive(!isSubscriptionActive)}
-            className={`px-2 py-1 rounded font-bold ${isSubscriptionActive ? 'bg-emerald-500' : 'bg-red-500'}`}
-          >
-            {isSubscriptionActive ? 'Active' : 'Expired'}
-          </button>
-        </div>
       </div>
     );
   }
 
-  // If active, render normally
-  return (
-    <>
-      {/* Development Toggle - Remove in production */}
-      <div className="fixed bottom-4 right-4 z-50 bg-slate-900 text-white p-3 rounded-lg shadow-xl text-xs flex items-center gap-2 border border-slate-700">
-        <span>Mock Status:</span>
-        <button
-          onClick={() => setIsSubscriptionActive(!isSubscriptionActive)}
-          className={`px-2 py-1 rounded font-bold ${isSubscriptionActive ? 'bg-emerald-500' : 'bg-red-500'}`}
-        >
-          {isSubscriptionActive ? 'Active' : 'Expired'}
-        </button>
-      </div>
-
-      {children}
-    </>
-  );
+  // If active (or user not yet loaded), render normally
+  return <>{children}</>;
 }
